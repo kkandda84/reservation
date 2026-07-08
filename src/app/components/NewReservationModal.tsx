@@ -47,15 +47,19 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
   ref
 ) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const formRef = useRef<HTMLFormElement>(null)
   const [state, action, pending] = useActionState<ActionState, FormData>(createReservation, null)
+  const [title, setTitle] = useState('')
+  const [bookedBy, setBookedBy] = useState('')
+  const [pin, setPin] = useState('')
   const [startTime, setStartTime] = useState('09:00')
   const [endTime, setEndTime] = useState('10:00')
 
   useEffect(() => {
     if (state?.success) {
       dialogRef.current?.close()
-      formRef.current?.reset()
+      setTitle('')
+      setBookedBy('')
+      setPin('')
       setStartTime('09:00')
       setEndTime('10:00')
     }
@@ -109,7 +113,7 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
             </button>
           </div>
 
-          <form ref={formRef} action={action} className="space-y-4">
+          <form action={action} className="space-y-4">
             <input type="hidden" name="roomId" value={roomId} />
             <input type="hidden" name="date" value={date} />
 
@@ -121,6 +125,8 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
                 type="text"
                 name="title"
                 required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="예: 주간 팀 미팅"
                 className={`w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 ${focusRing} focus:border-transparent`}
               />
@@ -134,6 +140,8 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
                 type="text"
                 name="bookedBy"
                 required
+                value={bookedBy}
+                onChange={(e) => setBookedBy(e.target.value)}
                 placeholder="이름을 입력하세요"
                 className={`w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 ${focusRing} focus:border-transparent`}
               />
@@ -150,6 +158,8 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
                 pattern="[0-9]{4}"
                 maxLength={4}
                 required
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="취소할 때 필요해요"
                 className={`w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 ${focusRing} focus:border-transparent`}
               />
