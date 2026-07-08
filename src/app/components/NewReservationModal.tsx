@@ -34,11 +34,7 @@ export interface NewReservationModalHandle {
   openWithRange: (startTime: string, endTime: string) => void
 }
 
-const BTN_BASE: Record<Props['roomColor'], string> = {
-  blue: 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 focus:ring-blue-400',
-  emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-400',
-  purple: 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 focus:ring-purple-400',
-}
+const BTN_BASE = 'bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-500'
 
 const FOCUS_RING: Record<Props['roomColor'], string> = {
   blue: 'focus:ring-blue-500',
@@ -73,7 +69,6 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
     },
   }))
 
-  const btnBase = BTN_BASE[roomColor]
   const focusRing = FOCUS_RING[roomColor]
 
   return (
@@ -83,8 +78,8 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
         onClick={() => dialogRef.current?.showModal()}
         className={
           compact
-            ? `${btnBase} px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors`
-            : `${btnBase} px-6 py-3 rounded-full shadow-md font-semibold text-sm transition-colors`
+            ? `${BTN_BASE} px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors`
+            : `${BTN_BASE} px-6 py-3 rounded-full shadow-md font-semibold text-sm transition-colors`
         }
       >
         + 새 예약
@@ -216,7 +211,7 @@ const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(functio
               <button
                 type="submit"
                 disabled={pending}
-                className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${btnBase}`}
+                className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${BTN_BASE}`}
               >
                 {pending ? '예약 중…' : '예약하기'}
               </button>
