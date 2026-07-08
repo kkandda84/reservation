@@ -16,13 +16,19 @@ function toPct(time: string): number {
 
 const HOUR_MARKS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 
+const BAR_COLORS: Record<RoomId, string> = {
+  large: 'bg-blue-500',
+  medium: 'bg-emerald-500',
+  small: 'bg-purple-500',
+}
+
 interface Props {
   reservations: Reservation[]
   roomId: RoomId
 }
 
 export default function ReservationTimeline({ reservations, roomId }: Props) {
-  const barColor = roomId === 'large' ? 'bg-blue-500' : 'bg-emerald-500'
+  const barColor = BAR_COLORS[roomId]
 
   return (
     <div>

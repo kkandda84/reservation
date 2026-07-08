@@ -1,4 +1,4 @@
-export type RoomId = 'large' | 'medium'
+export type RoomId = 'large' | 'medium' | 'small'
 
 export type Room = {
   id: RoomId

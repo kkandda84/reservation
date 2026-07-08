@@ -26,8 +26,20 @@ interface Props {
   roomId: RoomId
   roomName: string
   date: string
-  roomColor: 'blue' | 'emerald'
+  roomColor: 'blue' | 'emerald' | 'purple'
   compact?: boolean
+}
+
+const BTN_BASE: Record<Props['roomColor'], string> = {
+  blue: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+  emerald: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500',
+  purple: 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
+}
+
+const FOCUS_RING: Record<Props['roomColor'], string> = {
+  blue: 'focus:ring-blue-500',
+  emerald: 'focus:ring-emerald-500',
+  purple: 'focus:ring-purple-500',
 }
 
 export default function NewReservationModal({ roomId, roomName, date, roomColor, compact }: Props) {
@@ -42,13 +54,8 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
     }
   }, [state?.success])
 
-  const btnBase =
-    roomColor === 'blue'
-      ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-      : 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500'
-
-  const focusRing =
-    roomColor === 'blue' ? 'focus:ring-blue-500' : 'focus:ring-emerald-500'
+  const btnBase = BTN_BASE[roomColor]
+  const focusRing = FOCUS_RING[roomColor]
 
   return (
     <>

@@ -4,7 +4,14 @@ import { sql, initDb } from './db'
 export const ROOMS: Room[] = [
   { id: 'large', name: '대회의실', capacity: 20 },
   { id: 'medium', name: '중회의실', capacity: 10 },
+  { id: 'small', name: '소회의실', capacity: 6 },
 ]
+
+export const ROOM_COLORS: Record<RoomId, 'blue' | 'emerald' | 'purple'> = {
+  large: 'blue',
+  medium: 'emerald',
+  small: 'purple',
+}
 
 type DbRow = {
   id: string

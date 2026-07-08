@@ -1,10 +1,28 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ROOMS, getReservations, getToday, addDays, formatDateKorean, formatDateShort } from '@/lib/data'
+import { ROOMS, ROOM_COLORS, getReservations, getToday, addDays, formatDateKorean, formatDateShort } from '@/lib/data'
 import ReservationTimeline from '@/app/components/ReservationTimeline'
 import NewReservationModal from '@/app/components/NewReservationModal'
 import DeleteReservationButton from '@/app/components/DeleteReservationButton'
 import type { RoomId } from '@/lib/types'
+
+const NAME_COLORS = {
+  blue: 'text-blue-600',
+  emerald: 'text-emerald-600',
+  purple: 'text-purple-600',
+}
+
+const BAR_COLORS = {
+  blue: 'bg-blue-500',
+  emerald: 'bg-emerald-500',
+  purple: 'bg-purple-500',
+}
+
+const ACTIVE_TAB_COLORS = {
+  blue: 'bg-blue-600 text-white',
+  emerald: 'bg-emerald-600 text-white',
+  purple: 'bg-purple-600 text-white',
+}
 
 export default async function RoomPage({
   params,
@@ -28,13 +46,10 @@ export default async function RoomPage({
     .filter((r) => r.roomId === roomId && r.date === selectedDate)
     .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
-  const isLarge = room.id === 'large'
-  const nameColor = isLarge ? 'text-blue-600' : 'text-emerald-600'
-  const barColor = isLarge ? 'bg-blue-500' : 'bg-emerald-500'
-  const activeTab = isLarge
-    ? 'bg-blue-600 text-white'
-    : 'bg-emerald-600 text-white'
-  const roomColor = isLarge ? 'blue' : 'emerald'
+  const roomColor = ROOM_COLORS[room.id]
+  const nameColor = NAME_COLORS[roomColor]
+  const barColor = BAR_COLORS[roomColor]
+  const activeTab = ACTIVE_TAB_COLORS[roomColor]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -130,7 +145,7 @@ export default async function RoomPage({
           roomId={room.id as RoomId}
           roomName={room.name}
           date={selectedDate}
-          roomColor={roomColor as 'blue' | 'emerald'}
+          roomColor={roomColor}
         />
       </div>
     </div>

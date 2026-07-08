@@ -1,8 +1,20 @@
 import Link from 'next/link'
-import { ROOMS, getReservations, getToday, formatDateKorean } from '@/lib/data'
+import { ROOMS, ROOM_COLORS, getReservations, getToday, formatDateKorean } from '@/lib/data'
 import ReservationTimeline from './components/ReservationTimeline'
 import NewReservationModal from './components/NewReservationModal'
 import DeleteReservationButton from './components/DeleteReservationButton'
+
+const NAME_COLORS = {
+  blue: 'text-blue-600',
+  emerald: 'text-emerald-600',
+  purple: 'text-purple-600',
+}
+
+const DOT_COLORS = {
+  blue: 'bg-blue-500',
+  emerald: 'bg-emerald-500',
+  purple: 'bg-purple-500',
+}
 
 export default async function Home() {
   const today = getToday()
@@ -26,16 +38,16 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {ROOMS.map((room) => {
             const reservations = todayAll
               .filter((r) => r.roomId === room.id)
               .sort((a, b) => a.startTime.localeCompare(b.startTime))
 
-            const isLarge = room.id === 'large'
-            const nameColor = isLarge ? 'text-blue-600' : 'text-emerald-600'
-            const dotColor = isLarge ? 'bg-blue-500' : 'bg-emerald-500'
+            const roomColor = ROOM_COLORS[room.id]
+            const nameColor = NAME_COLORS[roomColor]
+            const dotColor = DOT_COLORS[roomColor]
 
             return (
               <div
@@ -91,7 +103,7 @@ export default async function Home() {
                     roomId={room.id}
                     roomName={room.name}
                     date={today}
-                    roomColor={isLarge ? 'blue' : 'emerald'}
+                    roomColor={roomColor}
                     compact
                   />
                 </div>
