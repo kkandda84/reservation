@@ -15,9 +15,14 @@ export async function createReservation(
   const endTime = formData.get('endTime') as string
   const title = (formData.get('title') as string)?.trim()
   const bookedBy = (formData.get('bookedBy') as string)?.trim()
+  const pin = formData.get('pin') as string
 
-  if (!roomId || !date || !startTime || !endTime || !title || !bookedBy) {
+  if (!roomId || !date || !startTime || !endTime || !title || !bookedBy || !pin) {
     return { error: '모든 필드를 입력해주세요.' }
+  }
+
+  if (!/^\d{4}$/.test(pin)) {
+    return { error: '비밀번호는 숫자 4자리로 입력해주세요.' }
   }
 
   if (startTime >= endTime) {
@@ -43,7 +48,7 @@ export async function createReservation(
     createdAt: new Date().toISOString(),
   }
 
-  await insertReservation(newReservation)
+  await insertReservation(newReservation, pin)
 
   revalidatePath('/')
   revalidatePath(`/rooms/${roomId}`)
@@ -56,14 +61,17 @@ export async function deleteReservation(
   formData: FormData
 ): Promise<ActionState> {
   const id = formData.get('id') as string
+  const pin = formData.get('pin') as string
 
   if (!id) return { error: '예약 ID가 없습니다.' }
+  if (!pin) return { error: '비밀번호를 입력해주세요.' }
 
-  const deleted = await removeReservation(id)
-  if (!deleted) return { error: '예약을 찾을 수 없습니다.' }
+  const result = await removeReservation(id, pin)
+  if (result === 'not_found') return { error: '예약을 찾을 수 없습니다.' }
+  if (result === 'wrong_pin') return { error: '비밀번호가 일치하지 않습니다.' }
 
   revalidatePath('/')
-  revalidatePath(`/rooms/${deleted.roomId}`)
+  revalidatePath(`/rooms/${result.roomId}`)
 
   return { success: true }
 }

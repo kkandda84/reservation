@@ -2,9 +2,9 @@ import type { Reservation, Room, RoomId } from './types'
 import { sql, initDb } from './db'
 
 export const ROOMS: Room[] = [
-  { id: 'large', name: '대회의실', capacity: 20 },
+  { id: 'large', name: '대회의실', capacity: 10 },
   { id: 'medium', name: '중회의실', capacity: 10 },
-  { id: 'small', name: '소회의실', capacity: 6 },
+  { id: 'small', name: '소회의실', capacity: 8 },
 ]
 
 export const ROOM_COLORS: Record<RoomId, 'blue' | 'emerald' | 'purple'> = {
@@ -22,6 +22,7 @@ type DbRow = {
   title: string
   booked_by: string
   created_at: string
+  pin: string
 }
 
 function toReservation(row: DbRow): Reservation {
@@ -45,20 +46,28 @@ export async function getReservations(): Promise<Reservation[]> {
   return rows.map(toReservation)
 }
 
-export async function insertReservation(r: Reservation): Promise<void> {
+export async function insertReservation(r: Reservation, pin: string): Promise<void> {
   await initDb()
   await sql`
-    INSERT INTO reservations (id, room_id, date, start_time, end_time, title, booked_by, created_at)
-    VALUES (${r.id}, ${r.roomId}, ${r.date}, ${r.startTime}, ${r.endTime}, ${r.title}, ${r.bookedBy}, ${r.createdAt})
+    INSERT INTO reservations (id, room_id, date, start_time, end_time, title, booked_by, created_at, pin)
+    VALUES (${r.id}, ${r.roomId}, ${r.date}, ${r.startTime}, ${r.endTime}, ${r.title}, ${r.bookedBy}, ${r.createdAt}, ${pin})
   `
 }
 
-export async function removeReservation(id: string): Promise<Reservation | null> {
+export type RemoveReservationResult = 'not_found' | 'wrong_pin' | Reservation
+
+export async function removeReservation(id: string, pin: string): Promise<RemoveReservationResult> {
   await initDb()
   const rows = (await sql`
+    SELECT * FROM reservations WHERE id = ${id}
+  `) as DbRow[]
+  if (rows.length === 0) return 'not_found'
+  if (rows[0].pin !== pin) return 'wrong_pin'
+
+  const deleted = (await sql`
     DELETE FROM reservations WHERE id = ${id} RETURNING *
   `) as DbRow[]
-  return rows.length > 0 ? toReservation(rows[0]) : null
+  return toReservation(deleted[0])
 }
 
 export async function findConflicts(
@@ -76,35 +85,4 @@ export async function findConflicts(
       AND end_time > ${startTime}
   `) as DbRow[]
   return rows.map(toReservation)
-}
-
-export function getToday(): string {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-export function addDays(dateStr: string, n: number): string {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  const date = new Date(y, m - 1, d + n)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-export function formatDateKorean(dateStr: string): string {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  const date = new Date(y, m - 1, d)
-  const days = ['일', '월', '화', '수', '목', '금', '토']
-  return `${y}년 ${m}월 ${d}일 (${days[date.getDay()]})`
-}
-
-export function formatDateShort(dateStr: string): string {
-  const [, m, d] = dateStr.split('-').map(Number)
-  const date = new Date(Number(dateStr.split('-')[0]), m - 1, d)
-  const days = ['일', '월', '화', '수', '목', '금', '토']
-  return `${m}/${d} (${days[date.getDay()]})`
 }

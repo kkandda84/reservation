@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useRef } from 'react'
+import { forwardRef, useActionState, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { createReservation } from '@/app/actions'
 import type { ActionState, RoomId } from '@/lib/types'
 
@@ -30,10 +30,14 @@ interface Props {
   compact?: boolean
 }
 
+export interface NewReservationModalHandle {
+  openWithRange: (startTime: string, endTime: string) => void
+}
+
 const BTN_BASE: Record<Props['roomColor'], string> = {
-  blue: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-  emerald: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500',
-  purple: 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
+  blue: 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 focus:ring-blue-400',
+  emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 focus:ring-emerald-400',
+  purple: 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 focus:ring-purple-400',
 }
 
 const FOCUS_RING: Record<Props['roomColor'], string> = {
@@ -42,17 +46,32 @@ const FOCUS_RING: Record<Props['roomColor'], string> = {
   purple: 'focus:ring-purple-500',
 }
 
-export default function NewReservationModal({ roomId, roomName, date, roomColor, compact }: Props) {
+const NewReservationModal = forwardRef<NewReservationModalHandle, Props>(function NewReservationModal(
+  { roomId, roomName, date, roomColor, compact },
+  ref
+) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [state, action, pending] = useActionState<ActionState, FormData>(createReservation, null)
+  const [startTime, setStartTime] = useState('09:00')
+  const [endTime, setEndTime] = useState('10:00')
 
   useEffect(() => {
     if (state?.success) {
       dialogRef.current?.close()
       formRef.current?.reset()
+      setStartTime('09:00')
+      setEndTime('10:00')
     }
-  }, [state?.success])
+  }, [state])
+
+  useImperativeHandle(ref, () => ({
+    openWithRange(newStartTime, newEndTime) {
+      setStartTime(newStartTime)
+      setEndTime(newEndTime)
+      dialogRef.current?.showModal()
+    },
+  }))
 
   const btnBase = BTN_BASE[roomColor]
   const focusRing = FOCUS_RING[roomColor]
@@ -60,11 +79,12 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
   return (
     <>
       <button
+        type="button"
         onClick={() => dialogRef.current?.showModal()}
         className={
           compact
-            ? `${btnBase} text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors`
-            : `${btnBase} text-white px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-colors`
+            ? `${btnBase} px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors`
+            : `${btnBase} px-6 py-3 rounded-full shadow-md font-semibold text-sm transition-colors`
         }
       >
         + 새 예약
@@ -124,6 +144,22 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호 (숫자 4자리) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                name="pin"
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                required
+                placeholder="취소할 때 필요해요"
+                className={`w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 ${focusRing} focus:border-transparent`}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -132,7 +168,8 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
                 <select
                   name="startTime"
                   required
-                  defaultValue="09:00"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
                   className={`w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 ${focusRing} focus:border-transparent`}
                 >
                   {START_TIMES.map((t) => (
@@ -149,7 +186,8 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
                 <select
                   name="endTime"
                   required
-                  defaultValue="10:00"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
                   className={`w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 ${focusRing} focus:border-transparent`}
                 >
                   {END_TIMES.map((t) => (
@@ -178,7 +216,7 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
               <button
                 type="submit"
                 disabled={pending}
-                className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-60 ${btnBase}`}
+                className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${btnBase}`}
               >
                 {pending ? '예약 중…' : '예약하기'}
               </button>
@@ -188,4 +226,6 @@ export default function NewReservationModal({ roomId, roomName, date, roomColor,
       </dialog>
     </>
   )
-}
+})
+
+export default NewReservationModal
